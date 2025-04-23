@@ -269,7 +269,7 @@ def main(args):
     extractor.H = args.pop("hidden")
 
     timestamp = datetime.datetime.now().isoformat()
-    outputDirectory = "experimentOutputs/list/%s"%timestamp
+    outputDirectory = "experimentOutputs/grid/%s"%timestamp
     os.system("mkdir -p %s"%outputDirectory)
     
     args.update({
