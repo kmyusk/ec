@@ -1,0 +1,104 @@
+FROM ubuntu:24.04
+
+# Set environment variables
+ENV HOME=/container
+ENV DEBIAN_FRONTEND="noninteractive"
+RUN dpkg --add-architecture amd64
+
+# Remove the default deb822 sources
+RUN rm /etc/apt/sources.list.d/ubuntu.sources
+
+# Add proper ARM64 sources (ports)
+RUN tee /etc/apt/sources.list.d/ubuntu-arm64.sources > /dev/null <<EOF
+Types: deb
+URIs: http://ports.ubuntu.com/ubuntu-ports
+Suites: noble noble-updates noble-security
+Components: main restricted universe multiverse
+Architectures: arm64
+EOF
+
+# Add proper AMD64 sources (archive)
+RUN tee /etc/apt/sources.list.d/ubuntu-amd64.sources > /dev/null <<EOF
+Types: deb
+URIs: http://archive.ubuntu.com/ubuntu
+Suites: noble noble-updates noble-security
+Components: main restricted universe multiverse
+Architectures: amd64
+EOF
+# Install system dependencies
+# Adding --no-install-recommends to reduce image size
+# and apt-get clean to remove apt cache files
+RUN apt-get update && apt-get -y install --no-install-recommends \
+    python3 \
+    git \
+    wget \
+    opam \
+    m4 \
+    libcairo2-dev \
+    libcairo2-dev:amd64 \
+    libzmq5-dev \
+    libzmq5-dev:amd64 \
+    libfreetype6:amd64 \
+    libfontconfig1:amd64 \
+    swig \
+    graphviz \
+    ca-certificates \
+    qemu-user-static \
+    binfmt-support \
+    libc6:amd64 \
+    libstdc++6:amd64 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Set up container directory
+RUN mkdir -p /container && \
+    chmod 777 /container
+
+# Install Miniconda for ARM64
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh -O miniconda.sh && \
+    chmod +x miniconda.sh && \
+    bash miniconda.sh -b -p /usr/local/conda && \
+    rm miniconda.sh
+
+# Update PATH to include conda
+ENV PATH="/usr/local/conda/bin:${PATH}"
+
+# Install Python packages
+RUN conda install -y python=3.10 numpy dill pyzmq matplotlib protobuf scikit-learn scipy && \
+    pip install git+https://github.com/MaxHalford/vose && \
+    pip install dill sexpdata pygame pycairo cairocffi psutil pypng Box2D-kengz graphviz frozendict pathos
+
+# Install PyTorch (try for ARM64, if issues, stick to cpuonly)
+# Check https://pytorch.org/get-started/locally/ for ARM64 availability
+RUN conda install python=3.10 pytorch torchvision torchaudio 'cpuonly' -c pytorch
+
+# Install OCaml and packages
+WORKDIR /container
+RUN opam init -y --disable-sandboxing --bare --root /container/.opam && \
+    opam update && \
+    opam switch create 4.12.0 && \
+    eval $(opam config env --root=/container/.opam) && \
+    opam install -y ppx_jane core re2 yojson vg cairo2 camlimages menhir ocaml-protoc zmq utop jbuilder
+
+# Set up OCaml environment
+RUN echo "#use \"topfind\";;\n#thread;;\n#require \"core.top\";;\n#require \"core.syntax\";;\nopen Core;;\n" > /container/.ocamlinit && \
+    echo 'eval $(opam config env --root=/container/.opam)' >> /container/.bashrc
+
+# Install PyPy for ARM64
+RUN wget https://downloads.python.org/pypy/pypy3.10-v7.3.19-aarch64.tar.bz2 -O pypy310.tar.bz2 && \
+    tar xjvf pypy310.tar.bz2 && \
+    rm pypy310.tar.bz2 && \
+    /container/pypy3.10-v7.3.19-aarch64/bin/pypy3 -m ensurepip && \
+    /container/pypy3.10-v7.3.19-aarch64/bin/pypy3 -m pip install vmprof dill psutil frozendict numpy pathos
+
+# Adjust PATH to include PyPy
+ENV PATH="/usr/local/conda/bin:/container/pypy3.10-v7.3.19-aarch64/bin:${PATH}"
+
+# Set up entrypoint to initialize OCaml environment
+ENTRYPOINT ["bash", "-c", "eval $(opam config env --root=/container/.opam) && exec \"$@\"", "--"]
+RUN opam install -y ocaml-migrate-parsetree.1.8.0
+
+USER ubuntu
+
+# Default command to run bash or the user specified command
+CMD ["bash"]

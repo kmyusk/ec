@@ -1,0 +1,85 @@
+FROM ubuntu:24.04
+
+# Set environment variables
+ENV HOME=/container
+ENV DEBIAN_FRONTEND="noninteractive"
+
+# Install system dependencies
+# Adding --no-install-recommends to reduce image size
+# and apt-get clean to remove apt cache files
+RUN apt-get update && apt-get -y install --no-install-recommends \
+    python3 \
+    git \
+    wget \
+    opam \
+    m4 \
+    libcairo2-dev \
+    libzmq3-dev \
+    swig \
+    graphviz \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up container directory
+RUN mkdir -p /container && \
+    chmod 777 /container
+
+# Install Miniconda for ARM64
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh && \
+    chmod +x miniconda.sh && \
+    bash miniconda.sh -b -p /usr/local/conda && \
+    rm miniconda.sh
+
+# Update PATH to include conda
+ENV PATH="/usr/local/conda/bin:${PATH}"
+
+# Install Python packages
+RUN conda install -y python=3.10 numpy dill pyzmq matplotlib protobuf scikit-learn scipy && \
+    pip install git+https://github.com/MaxHalford/vose && \
+    pip install dill sexpdata pygame pycairo cairocffi psutil pypng Box2D-kengz graphviz frozendict pathos
+
+# Install PyTorch (try for ARM64, if issues, stick to cpuonly)
+# Check https://pytorch.org/get-started/locally/ for ARM64 availability
+RUN conda install python=3.10 pytorch torchvision torchaudio 'cpuonly' -c pytorch
+
+# Install OCaml and packages
+WORKDIR /container
+
+RUN apt-get update && apt-get install -y ocaml-core  # Example for Ubuntu
+
+# Init opam without triggering compiler install
+RUN opam init -y --disable-sandboxing --root /container/.opam --comp=4.14.1
+
+# Set OPAM env vars
+ENV OPAMROOT=/container/.opam
+ENV PATH=/container/.opam/default/bin:$PATH
+SHELL ["/bin/bash", "-c"]
+
+# Install a newer compiler
+RUN opam update && \
+    #opam switch create 5.1.1 && \
+    eval $(opam env) && \
+    opam install -y dune core yojson utop # replace with your packages
+
+# Set up OCaml environment
+RUN echo "#use \"topfind\";;\n#thread;;\n#require \"core.top\";;\n#require \"core.syntax\";;\nopen Core;;\n" > /container/.ocamlinit && \
+    echo 'eval $(opam config env --root=/container/.opam --switch=4.14.1)' >> /container/.bashrc
+
+# Install PyPy for ARM64
+RUN wget https://downloads.python.org/pypy/pypy3.10-v7.3.19-linux64.tar.bz2 -O pypy310.tar.bz2 && \
+    tar xjvf pypy310.tar.bz2 && \
+    rm pypy310.tar.bz2 && \
+    /container/pypy3.10-v7.3.19-linux64/bin/pypy3 -m ensurepip && \
+    /container/pypy3.10-v7.3.19-linux64/bin/pypy3 -m pip install vmprof dill psutil frozendict numpy pathos
+
+# Adjust PATH to include PyPy
+ENV PATH="/usr/local/conda/bin:/container/pypy3.10-v7.3.19-linux64/bin:${PATH}"
+
+# Set up entrypoint to initialize OCaml environment
+ENTRYPOINT ["bash", "-c", "eval $(opam config env --root=/container/.opam --switch=4.14.1) && exec \"$@\"", "--"]
+
+USER ubuntu
+
+# Default command to run bash or the user specified command
+CMD ["bash"]
