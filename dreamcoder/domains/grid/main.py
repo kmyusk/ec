@@ -250,7 +250,7 @@ def main(args):
     eprint("Removed", sum(isIdentityTask(t) for t in tasks), "tasks that were just the identity function")
     tasks = [t for t in tasks if not isIdentityTask(t) ]
 
-    prims = bootstrapTarget_extra() + gridPrimitives()
+    prims = gridPrimitives()
     haveLength = not args.pop("noLength")
     haveMap = not args.pop("noMap")
     haveUnfold = not args.pop("noUnfold")

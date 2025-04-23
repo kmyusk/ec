@@ -104,6 +104,12 @@ def _blob_to_grid(b):
     g = _empty_grid_uncurried(max_r + 1, max_c + 1)
     return _embed_uncurried1(g, b)
 
+def _get_rows(g): return len(g)
+
+def _get_cols(g): return len(g[0])
+
+def _cons_pair(a): return lambda b: [a, b]
+
 
 def gridPrimitives():
     return [
@@ -115,7 +121,12 @@ def gridPrimitives():
         Primitive("repeat", arrow(tblob, tdirection, tint, tblob), _repeat),
         Primitive("grid_blob", arrow(tgrid, tblob), _grid_to_blob),
         Primitive("blob_grid", arrow(tblob, tgrid), _blob_to_grid),
-        Primitive("move_blob", arrow(tblob, tdisplacement, tblob), _move_blob)
+        Primitive("move_blob", arrow(tblob, tdisplacement, tblob), _move_blob),
+        Primitive("get_rows", arrow(tgrid, tint), _get_rows),
+        Primitive("get_cols", arrow(tgrid, tint), _get_cols),
+        Primitive("make_direction", arrow(tint, tint, tdirection), _cons_pair),
+        Primitive("make_displacement", arrow(tint, tint, tdisplacement), _cons_pair),
+        Primitive("make_coord", arrow(tint, tint, tcoord), _cons_pair),
     ]
 
 
