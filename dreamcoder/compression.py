@@ -197,7 +197,7 @@ def rustInduce(g0, frontiers, _=None,
     message = {
         "strategy": {"version-spaces": {"top_i": 50}}
         if vs else
-        {"fragment-grammars": {}},
+        "fragment-grammars",
         "params": {
             "structure_penalty": structurePenalty,
             "pseudocounts": int(pseudoCounts + 0.5),
