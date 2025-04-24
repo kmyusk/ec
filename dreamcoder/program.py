@@ -147,7 +147,7 @@ class Program(object):
 
     @staticmethod
     def parse(s):
-        # s = parseSExpression(s)
+        s = parseSExpression(s)
         def p(e):
             if isinstance(e,list):
                 if e[0] == '#':
