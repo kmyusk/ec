@@ -1,4 +1,5 @@
 import copy
+import itertools
 from dreamcoder.program import Primitive, Program
 from dreamcoder.grammar import Grammar
 from dreamcoder.type import arrow, baseType, tint, tbool, tpair, tlist, t0, t1, t2
@@ -112,6 +113,7 @@ def _cons_pair(a): return lambda b: [a, b]
 
 
 def gridPrimitives():
+    direction_primitives = [Primitive(f"direction_{i}", tdirection, d) for i, d in enumerate(itertools.product([-1, 0, 1], [-1, 0, 1])) if d != [0, 0]]
     return [
         Primitive("red_pixel", tblob, [(1, (0, 0))]),
         Primitive("green_pixel", tblob, [(2, (0, 0))]),
@@ -124,11 +126,40 @@ def gridPrimitives():
         Primitive("move_blob", arrow(tblob, tdisplacement, tblob), _move_blob),
         Primitive("get_rows", arrow(tgrid, tint), _get_rows),
         Primitive("get_cols", arrow(tgrid, tint), _get_cols),
-        Primitive("make_direction", arrow(tint, tint, tdirection), _cons_pair),
         Primitive("make_displacement", arrow(tint, tint, tdisplacement), _cons_pair),
         Primitive("make_coord", arrow(tint, tint, tcoord), _cons_pair),
         Primitive("make_pixel", arrow(tcolor, tcoord, tpixel), _cons_pair),
-        Primitive("coord_to_displacement", arrow(tcoord, tdisplacement), lambda x: x),
+        Primitive("cast_coord_to_displacement", arrow(tcoord, tdisplacement), lambda x: x),
+        Primitive("pxl_to_blob", arrow(tpixel, tblob), lambda p: [p]),
+        Primitive("add_pxl_to_blob", arrow(tpixel, tblob, tblob), lambda p: lambda b: b.append(p)),
+        Primitive("extract_color", arrow(tpixel, tcolor), lambda p: p[0]),
+        Primitive("extract_coord", arrow(tpixel, tcoord), lambda p: p[1]),
+        Primitive("get_row", arrow(tcoord, tint), lambda c: c[0]),
+        Primitive("get_col", arrow(tcoord, tint), lambda c: c[1]),
+        Primitive("cast_color_to_int", arrow(tcolor, tint), lambda c: c),
+    ] + direction_primitives
+
+def gridBasePrimitives():
+    return [
+        Primitive("map", arrow(arrow(t0, t1), tlist(t0), tlist(t1)), _map),
+        Primitive("unfold", arrow(t0, arrow(t0,tbool), arrow(t0,t1), arrow(t0,t0), tlist(t1)), _unfold),
+        Primitive("range", arrow(tint, tlist(tint)), _range),
+        Primitive("index", arrow(tint, tlist(t0), t0), _index),
+        Primitive("fold", arrow(tlist(t0), t1, arrow(t0, t1, t1), t1), _fold),
+        Primitive("length", arrow(tlist(t0), tint), len),
+        Primitive("filter", arrow(arrow(t0, tbool), tlist(t0), tlist(t0)), _filter),
+
+        # built-ins
+        Primitive("if", arrow(tbool, t0, t0, t0), _if),
+        Primitive("+", arrow(tint, tint, tint), _addition),
+        Primitive("-", arrow(tint, tint, tint), _subtraction),
+        Primitive("*", arrow(tint, tint, tint), _multiplication),
+        Primitive("empty?", arrow(tlist(t0), tbool), _isEmpty),
+        Primitive("true", tbool, True),
+        Primitive("not", arrow(tbool, tbool), _not),
+        Primitive("and", arrow(tbool, tbool, tbool), _and),
+        Primitive("or", arrow(tbool, tbool, tbool), _or),
+        Primitive("eq?", arrow(tint, tint, tbool), _eq),
     ]
 
 

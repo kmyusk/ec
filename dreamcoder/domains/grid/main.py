@@ -11,7 +11,7 @@ from dreamcoder.grammar import Grammar
 from dreamcoder.task import Task
 from dreamcoder.program import Primitive
 from dreamcoder.type import Context, arrow, tbool, tlist, tint, t0, UnificationFailure
-from dreamcoder.domains.grid.gridPrimitives import _grid_to_blob, basePrimitives, primitives, McCarthyPrimitives, bootstrapTarget_extra, no_length, gridPrimitives, tgrid, tcoord, tcolor
+from dreamcoder.domains.grid.gridPrimitives import _grid_to_blob, gridPrimitives, gridBasePrimitives, tgrid, tpixel, tcolor
 from dreamcoder.domains.list.makeListTasks import make_list_bootstrap_tasks, sortBootstrap, EASYLISTTASKS
 
 
@@ -251,17 +251,14 @@ def main(args):
     eprint("Removed", sum(isIdentityTask(t) for t in tasks), "tasks that were just the identity function")
     tasks = [t for t in tasks if not isIdentityTask(t) ]
 
+    unique_pxls = set()
     for task in tasks:
         _, o = task.examples[0]
         b = _grid_to_blob(o)
-        colors = set()
-        coord_prims = []
-        for i, (color, coord) in enumerate(b):
-            colors.add(color)
-            coord_prims.append(Primitive(f"coord_{i}", tcoord, coord))
-        color_prims = [Primitive(f"color_{c}", tcolor, c) for c in colors]
+        unique_pxls = unique_pxls.union(set(b))
+    pxl_prims = [Primitive(f"pixel_{i}", tpixel, pxl) for i, pxl in enumerate(unique_pxls)]
 
-    prims = gridPrimitives() + coord_prims + color_prims
+    prims = gridPrimitives() + pxl_prims + gridBasePrimitives()
     haveLength = not args.pop("noLength")
     haveMap = not args.pop("noMap")
     haveUnfold = not args.pop("noUnfold")
