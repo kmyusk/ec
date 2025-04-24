@@ -147,13 +147,13 @@ class Program(object):
 
     @staticmethod
     def parse(s):
-        s = parseSExpression(s)
+        # s = parseSExpression(s)
         def p(e):
             if isinstance(e,list):
                 if e[0] == '#':
                     assert len(e) == 2
                     return Invented(p(e[1]))
-                if e[0] == 'lambda':
+                if e[0] in ['lambda', 'λ']:
                     assert len(e) == 2
                     return Abstraction(p(e[1]))                    
                 f = p(e[0])

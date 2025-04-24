@@ -61,6 +61,8 @@ from dreamcoder.domains.logo import main as logo_main
 from dreamcoder.domains.list import listPrimitives
 from dreamcoder.domains.list import makeListTasks
 from dreamcoder.domains.list import main as list_main
+from dreamcoder.domains.grid import gridPrimitives
+from dreamcoder.domains.grid import main as grid_main
 from dreamcoder.domains.arithmetic import arithmeticPrimitives
 from dreamcoder.domains.text import textPrimitives
 from dreamcoder.domains.text import makeTextTasks
@@ -105,3 +107,4 @@ sys.modules['textPrimitives'] = textPrimitives
 sys.modules['makeTextTasks'] = makeTextTasks
 #sys.modules['text'] = text_main
 sys.modules['primitiveGraph'] = primitiveGraph
+sys.modules['gridPrimitives'] = gridPrimitives

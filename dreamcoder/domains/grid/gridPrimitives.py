@@ -113,7 +113,7 @@ def _cons_pair(a): return lambda b: [a, b]
 
 
 def gridPrimitives():
-    direction_primitives = [Primitive(f"direction_{i}", tdirection, d) for i, d in enumerate(itertools.product([-1, 0, 1], [-1, 0, 1])) if d != [0, 0]]
+    direction_primitives = [Primitive(f"direction_{i}", tdirection, list(d)) for i, d in enumerate(itertools.product([-1, 0, 1], [-1, 0, 1])) if list(d) != [0, 0]]
     return [
         Primitive("red_pixel", tblob, [(1, (0, 0))]),
         Primitive("green_pixel", tblob, [(2, (0, 0))]),
@@ -138,30 +138,6 @@ def gridPrimitives():
         Primitive("get_col", arrow(tcoord, tint), lambda c: c[1]),
         Primitive("cast_color_to_int", arrow(tcolor, tint), lambda c: c),
     ] + direction_primitives
-
-def gridBasePrimitives():
-    return [
-        Primitive("map", arrow(arrow(t0, t1), tlist(t0), tlist(t1)), _map),
-        Primitive("unfold", arrow(t0, arrow(t0,tbool), arrow(t0,t1), arrow(t0,t0), tlist(t1)), _unfold),
-        Primitive("range", arrow(tint, tlist(tint)), _range),
-        Primitive("index", arrow(tint, tlist(t0), t0), _index),
-        Primitive("fold", arrow(tlist(t0), t1, arrow(t0, t1, t1), t1), _fold),
-        Primitive("length", arrow(tlist(t0), tint), len),
-        Primitive("filter", arrow(arrow(t0, tbool), tlist(t0), tlist(t0)), _filter),
-
-        # built-ins
-        Primitive("if", arrow(tbool, t0, t0, t0), _if),
-        Primitive("+", arrow(tint, tint, tint), _addition),
-        Primitive("-", arrow(tint, tint, tint), _subtraction),
-        Primitive("*", arrow(tint, tint, tint), _multiplication),
-        Primitive("empty?", arrow(tlist(t0), tbool), _isEmpty),
-        Primitive("true", tbool, True),
-        Primitive("not", arrow(tbool, tbool), _not),
-        Primitive("and", arrow(tbool, tbool, tbool), _and),
-        Primitive("or", arrow(tbool, tbool, tbool), _or),
-        Primitive("eq?", arrow(tint, tint, tbool), _eq),
-    ]
-
 
 
 
@@ -496,6 +472,31 @@ def McCarthyPrimitives():
         Primitive("+", arrow(tint, tint, tint), _addition),
         Primitive("-", arrow(tint, tint, tint), _subtraction),
     ] + [Primitive(str(j), tint, j) for j in range(2)]
+
+def gridBasePrimitives():
+    return [
+        Primitive("map", arrow(arrow(t0, t1), tlist(t0), tlist(t1)), _map),
+        Primitive("unfold", arrow(t0, arrow(t0,tbool), arrow(t0,t1), arrow(t0,t0), tlist(t1)), _unfold),
+        Primitive("range", arrow(tint, tlist(tint)), _range),
+        Primitive("index", arrow(tint, tlist(t0), t0), _index),
+        Primitive("fold", arrow(tlist(t0), t1, arrow(t0, t1, t1), t1), _fold),
+        Primitive("length", arrow(tlist(t0), tint), len),
+        Primitive("filter", arrow(arrow(t0, tbool), tlist(t0), tlist(t0)), _filter),
+
+        # built-ins
+        Primitive("if", arrow(tbool, t0, t0, t0), _if),
+        Primitive("+", arrow(tint, tint, tint), _addition),
+        Primitive("-", arrow(tint, tint, tint), _subtraction),
+        Primitive("*", arrow(tint, tint, tint), _multiplication),
+        Primitive("empty?", arrow(tlist(t0), tbool), _isEmpty),
+        Primitive("true", tbool, True),
+        Primitive("not", arrow(tbool, tbool), _not),
+        Primitive("and", arrow(tbool, tbool, tbool), _and),
+        Primitive("or", arrow(tbool, tbool, tbool), _or),
+        Primitive("eq?", arrow(tint, tint, tbool), _eq),
+    ]
+
+primitives = gridPrimitives() + gridBasePrimitives()
 
 
 if __name__ == "__main__":
