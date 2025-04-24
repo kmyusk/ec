@@ -128,6 +128,7 @@ def gridPrimitives():
         Primitive("make_displacement", arrow(tint, tint, tdisplacement), _cons_pair),
         Primitive("make_coord", arrow(tint, tint, tcoord), _cons_pair),
         Primitive("make_pixel", arrow(tcolor, tcoord, tpixel), _cons_pair),
+        Primitive("coord_to_displacement", arrow(tcoord, tdisplacement), lambda x: x),
     ]
 
 
