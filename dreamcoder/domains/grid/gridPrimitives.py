@@ -95,7 +95,7 @@ def _repeat_uncurried1(blob, direction, n):
 _repeat = curry(_repeat_uncurried1)
 
 def _grid_to_blob(g):
-    return [(g[r][c], (r, c)) for r in range(len(g)) for c in range(len(r))]
+    return [(g[r][c], (r, c)) for r in range(len(g)) for c in range(len(g[0]))]
 
 def _blob_to_grid(b):
     coords = [px[1] for px in b]
@@ -127,6 +127,7 @@ def gridPrimitives():
         Primitive("make_direction", arrow(tint, tint, tdirection), _cons_pair),
         Primitive("make_displacement", arrow(tint, tint, tdisplacement), _cons_pair),
         Primitive("make_coord", arrow(tint, tint, tcoord), _cons_pair),
+        Primitive("make_pixel", arrow(tcolor, tcoord, tpixel), _cons_pair),
     ]
 
 
