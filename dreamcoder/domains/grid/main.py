@@ -258,7 +258,7 @@ def main(args):
         unique_pxls = unique_pxls.union(set(b))
     pxl_prims = [Primitive(f"pixel_{i}", tpixel, pxl) for i, pxl in enumerate(unique_pxls)]
 
-    prims = gridPrimitives() + pxl_prims + gridBasePrimitives()
+    prims = gridPrimitives() + pxl_prims #+ gridBasePrimitives()
     haveLength = not args.pop("noLength")
     haveMap = not args.pop("noMap")
     haveUnfold = not args.pop("noUnfold")
