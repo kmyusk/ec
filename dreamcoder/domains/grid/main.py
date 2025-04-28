@@ -11,7 +11,7 @@ from dreamcoder.grammar import Grammar
 from dreamcoder.task import Task
 from dreamcoder.program import Primitive
 from dreamcoder.type import Context, arrow, tbool, tlist, tint, t0, UnificationFailure
-from dreamcoder.domains.grid.gridPrimitives import _grid_to_blob, gridPrimitives, pxl_to_blob, tblob, gridBasePrimitives, tgrid, tpixel, tcolor
+from dreamcoder.domains.grid.gridPrimitives import _grid_to_blob, gridPrimitives, tblob, gridBasePrimitives, tgrid, tpixel, tcolor
 from dreamcoder.domains.list.makeListTasks import make_list_bootstrap_tasks, sortBootstrap, EASYLISTTASKS
 
 
