@@ -11,7 +11,7 @@ from dreamcoder.grammar import Grammar
 from dreamcoder.task import Task
 from dreamcoder.program import Primitive
 from dreamcoder.type import Context, arrow, tbool, tlist, tint, t0, UnificationFailure
-from dreamcoder.domains.grid.gridPrimitives import _grid_to_blob, gridPrimitives, gridBasePrimitives, tgrid, tpixel, tcolor
+from dreamcoder.domains.grid.gridPrimitives import _grid_to_blob, gridPrimitives, pxl_to_blob, tblob, gridBasePrimitives, tgrid, tpixel, tcolor
 from dreamcoder.domains.list.makeListTasks import make_list_bootstrap_tasks, sortBootstrap, EASYLISTTASKS
 
 
@@ -257,8 +257,9 @@ def main(args):
         b = _grid_to_blob(o)
         unique_pxls = unique_pxls.union(set(b))
     pxl_prims = [Primitive(f"pixel_{i}", tpixel, pxl) for i, pxl in enumerate(unique_pxls)]
+    pxl_blob_prims = [Primitive(f"pixel_{i}", tblob, pxl_to_blob(pxl)) for i, pxl in enumerate(unique_pxls)]
 
-    prims = gridPrimitives() + pxl_prims #+ gridBasePrimitives()
+    prims = gridPrimitives() + pxl_prims + pxl_blob_prims #+ gridBasePrimitives()
     haveLength = not args.pop("noLength")
     haveMap = not args.pop("noMap")
     haveUnfold = not args.pop("noUnfold")
