@@ -257,7 +257,7 @@ def main(args):
         b = _grid_to_blob(o)
         unique_pxls = unique_pxls.union(set(b))
     pxl_prims = [Primitive(f"pixel_{i}", tpixel, pxl) for i, pxl in enumerate(unique_pxls)]
-    pxl_blob_prims = [Primitive(f"pixel_{i}", tblob, pxl_to_blob(pxl)) for i, pxl in enumerate(unique_pxls)]
+    pxl_blob_prims = [Primitive(f"pixel_{i}", tblob, [pxl]) for i, pxl in enumerate(unique_pxls)]
 
     prims = gridPrimitives() + pxl_prims + pxl_blob_prims #+ gridBasePrimitives()
     haveLength = not args.pop("noLength")
